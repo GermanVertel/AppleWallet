@@ -10,6 +10,10 @@ import SwiftUI
 struct WalletView: View {
     //constante para offsett:  desparramar las tarjetas una debajo de otra
     private static let cardOffset: CGFloat = 40.0
+    //variables de estado para las animacines y tranciciones
+    private static let cardTimingOffset: CGFloat = 0.4
+    @State private var isCardPresented = false
+
     
     var body: some View {
         VStack {
@@ -22,7 +26,14 @@ struct WalletView: View {
                         .padding(.horizontal, 24)
                         .offset(self.offset(for: Card))
                         .zIndex(self.zIndex(for: Card))
+                        .id(self.isCardPresented)
+                        .transition(AnyTransition.slide.combined(with: .move(edge: .leading)).combined(with: .opacity))
+                        .animation(self.transitionAnimation(for: Card), value: self.isCardPresented)
+                       
                 }
+            }
+            .onAppear{
+                self.isCardPresented.toggle()
             }
             Spacer()
         }
@@ -57,6 +68,15 @@ struct WalletView: View {
             return nil
         }
         return index
+    }
+    
+    //funcin para la animacion, hace que las tajetas aparezcan de izquierda a derecha una detras de la otras en la zona de tarjetero
+    private func transitionAnimation(for card: Card) -> Animation{
+        var delay = 0.0
+        if let index = index(for: card) {
+            delay = Double(cards.count - index)*WalletView.cardTimingOffset
+        }
+        return Animation.spring(response: 0.1, dampingFraction: 0.8, blendDuration: 0.1).delay(delay)
     }
 }
 
